@@ -1,4 +1,4 @@
-package com.example.dialogscompose
+package com.example.dialogscompose.dialogs.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -13,16 +13,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.dialogscompose.dialogs.DialogViewModel
+import com.example.dialogscompose.dialogs.ui.views.AlertDialog
+import com.example.dialogscompose.dialogs.ui.views.CustomDialog
 import com.example.dialogscompose.ui.theme.DialogsComposeTheme
-import com.example.dialogscompose.ui.views.AlertDialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,7 +33,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Container()
+
                 }
             }
         }
@@ -42,8 +41,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Container() {
-    var show by remember { mutableStateOf(false) }
+fun Container(dialogViewModel: DialogViewModel) {
+    val isAlertDialogShown = dialogViewModel.isAlertDialogShown.observeAsState(false)
+    val isCustomtDialogShown = dialogViewModel.isCustomDialog.observeAsState(false)
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,25 +53,27 @@ fun Container() {
         verticalArrangement = Arrangement.Center
     ) {
         Button(
-            onClick = { show = true },
+            onClick = { dialogViewModel.showAlertDialog(true) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)) {
-            Text(text = "Dialogo alerta")
+                .padding(vertical = 16.dp)
+        ) {
+            Text(text = "Alert dialog")
         }
-        Button(onClick = { /*TODO*/ },
+        Button(
+            onClick = { dialogViewModel.showCustomDialog(true) },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)) {
-            Text(text = "Dialogo custom")
+                .padding(vertical = 16.dp)
+        ) {
+            Text(text = "Custom dialog")
         }
-        Button(onClick = { /*TODO*/ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp)) {
-            Text(text = "Dialogo alerta")
-        }
-        AlertDialog(isShowed = show, onDismissRequest = { /*TODO*/ }, onConfirmation = {})
+        AlertDialog(
+            isShowed = isAlertDialogShown.value,
+            onDismiss = { dialogViewModel.showAlertDialog(false) })
+        CustomDialog(
+            isShowed = isCustomtDialogShown.value,
+            onDismiss = { dialogViewModel.showCustomDialog(false) })
     }
 }
 
@@ -79,6 +81,6 @@ fun Container() {
 @Composable
 fun MainPreview() {
     DialogsComposeTheme {
-        Container()
+        Container(DialogViewModel())
     }
 }
